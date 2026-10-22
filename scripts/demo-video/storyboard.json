@@ -1,0 +1,112 @@
+{
+  "voice": "en-US-AndrewNeural",
+  "card_seconds": 1.5,
+  "pad_seconds": 0.35,
+  "max_total_seconds": 180,
+  "scenes": [
+    {
+      "id": "login",
+      "card": "TrustGate",
+      "subtitle": "Consent broker cho AI agent",
+      "role": null,
+      "target": 11,
+      "narration": "An AI agent wants your whole document folder. TrustGate gives it only what you approve - for one purpose, for a set time, and revocable at any moment."
+    },
+    {
+      "id": "vault",
+      "card": "1 · The Vault",
+      "role": "owner",
+      "target": 8,
+      "narration": "Your documents are encrypted in the browser with AES-256-GCM. The server only ever stores ciphertext."
+    },
+    {
+      "id": "scope",
+      "card": "2 · Purpose",
+      "role": "owner",
+      "target": 9,
+      "narration": "A playbook defines what may be shared, and for whom. The agent proposes the minimum set of documents."
+    },
+    {
+      "id": "consent",
+      "card": "3 · Consent",
+      "role": "owner",
+      "target": 10,
+      "narration": "Now you decide. Unlock the vault, uncheck the optional document, choose a fifteen-minute lifetime. The server enforces the scope."
+    },
+    {
+      "id": "agent-run",
+      "card": "4 · The Agent Runs",
+      "role": "owner",
+      "target": 9,
+      "narration": "The agent receives only what you approved, sealed to a key that expires with the grant. Every step is logged."
+    },
+    {
+      "id": "agent-role",
+      "role": "agent",
+      "target": 8,
+      "narration": "The agent has no console of its own. It is an API client, and everything it does is logged."
+    },
+    {
+      "id": "db-dump",
+      "card": "5 · The Server Sees Nothing",
+      "role": "admin1",
+      "target": 11,
+      "narration": "As an administrator, dump the entire database. Every document is ciphertext. No plaintext, no keys, and your passphrase never reaches the server."
+    },
+    {
+      "id": "elevate",
+      "card": "6 · One Admin Isn't Enough",
+      "role": "admin1",
+      "target": 11,
+      "narration": "Try to grant yourself administrator. The system does not refuse - it downgrades you into a pending change request: zero of two approvals. Your role has not changed."
+    },
+    {
+      "id": "out-of-scope",
+      "card": "7 · Scope Is Enforced",
+      "role": "admin1",
+      "target": 10,
+      "narration": "And the agent cannot ask for anything outside its scope. Medical records are refused: four-oh-three, out of scope, and it is logged."
+    },
+    {
+      "id": "quorum-create",
+      "card": "8 · Quorum",
+      "role": "admin1",
+      "target": 10,
+      "narration": "Direct changes are blocked: four-oh-nine, quorum required. The legitimate path is a change request - admin one re-authenticates and signs."
+    },
+    {
+      "id": "quorum-approve",
+      "role": "admin2",
+      "target": 8,
+      "narration": "Admin two signs as well. Two signatures reach the quorum threshold - and only then does the change execute."
+    },
+    {
+      "id": "revoke-run",
+      "card": "9 · Revocable",
+      "role": "admin1",
+      "target": 7,
+      "narration": "Consent is revocable mid-flight. Watch a slow agent run step through the grant."
+    },
+    {
+      "id": "revoke",
+      "role": "owner",
+      "target": 9,
+      "narration": "Revoke the grant. The key is deleted - crypto-shredding - and the agent fails at its very next step: failed, revoked."
+    },
+    {
+      "id": "audit",
+      "card": "10 · Audit Chain",
+      "role": "admin1",
+      "target": 9,
+      "narration": "Every access is written to an append-only hash chain. Verify the chain, and the system proves nothing was altered."
+    },
+    {
+      "id": "outro",
+      "card": "TrustGate",
+      "subtitle": "Laravel · React · WebCrypto · AES-256-GCM · Hash-chained audit",
+      "role": null,
+      "target": 11,
+      "narration": "TrustGate: a vault and consent broker for AI agents. Laravel, React, WebCrypto, AES-256-GCM, hash-chained audit. A prototype - encryption is browser-side fallback mode, not yet trustless."
+    }
+  ]
+}

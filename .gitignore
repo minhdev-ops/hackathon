@@ -22,3 +22,11 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Pipeline demo video (scripts/demo-video)
+scripts/demo-video/.venv
+scripts/demo-video/bin
+scripts/demo-video/.auth
+scripts/demo-video/.work
+demo-video/work
+demo-video/out
