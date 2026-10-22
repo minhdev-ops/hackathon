@@ -1,0 +1,418 @@
+{
+    "info": {
+        "name": "TrustGate API — Postman Collection",
+        "description": "Tất cả API v1 của TrustGate (Laravel session auth). Import file này vào Postman, thiết lập biến môi trường {{baseUrl}} rồi chạy theo thứ tự từ trên xuống.\n\nLưu ý quan trọng:\n- Tất cả route nằm trong nhóm middleware 'auth' (session Laravel). Trước khi gọi API, hãy mở trình duyệt, đăng nhập qua web (/login), sao chép session cookie (XSRF-TOKEN, laravel_session) vào Postman (tab Cookies).\n- Hoặc bật 'Cookies' trong Postman và để Postman tự quản lý cookie khi gọi route đăng nhập web.\n- Các biến có ký hiệu <<...>> cần bạn điền từ response trước đó.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        { "key": "baseUrl", "value": "http://localhost:8000", "type": "string" },
+        { "key": "apiPrefix", "value": "/api/v1", "type": "string" },
+        { "key": "docId", "value": "", "type": "string" },
+        { "key": "taskId", "value": "", "type": "string" },
+        { "key": "grantId", "value": "", "type": "string" },
+        { "key": "crId", "value": "", "type": "string" },
+        { "key": "slug", "value": "rental", "type": "string" }
+    ],
+    "item": [
+        {
+            "name": "0. Môi trường & kiểm tra kết nối",
+            "item": [
+                {
+                    "name": "GET / (trang chủ web) — kiểm tra server sống",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "text/html" } ],
+                        "url": { "raw": "{{baseUrl}}", "host": ["{{baseUrl}}"], "path": [""] },
+                        "description": "Kiểm tra Laravel server đã chạy chưa."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "1. Auth & Me",
+            "item": [
+                {
+                    "name": "GET /me — tôi là ai",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/me", "host": ["{{baseUrl}}{{apiPrefix}}", "me"], "path": ["me"] },
+                        "description": "FR-AUTH-04: Trả về user hiện tại (cần session). Dùng để lấy owner_id."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "2. Playbook (FR-PB-01, 02)",
+            "item": [
+                {
+                    "name": "GET /playbooks — danh sách lĩnh vực",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/playbooks", "host": ["{{baseUrl}}{{apiPrefix}}", "playbooks"], "path": ["playbooks"] },
+                        "description": "FR-PB-02: Owner/admin xem playbook. Lấy slug để tạo task."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "3. Vault — Tài liệu (FR-VAULT-01..05)",
+            "item": [
+                {
+                    "name": "GET /documents — danh sách két",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/documents", "host": ["{{baseUrl}}{{apiPrefix}}", "documents"], "path": ["documents"] },
+                        "description": "FR-VAULT-02: Danh sách tài liệu của owner (metadata + ciphertext ref)."
+                    }
+                },
+                {
+                    "name": "POST /documents — tải lên & mã hoá",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "multipart/form-data" }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                { "key": "file", "type": "file", "src": [] },
+                                { "key": "doc_type", "type": "text", "value": "id_card" },
+                                { "key": "title", "type": "text", "value": "CMND minh minh" },
+                                { "key": "iv", "type": "text", "value": "" },
+                                { "key": "sha256", "type": "text", "value": "" },
+                                { "key": "title_ct", "type": "text", "value": "" },
+                                { "key": "enc_mode", "type": "text", "value": "fallback" }
+                            ]
+                        },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/documents", "host": ["{{baseUrl}}{{apiPrefix}}", "documents"], "path": ["documents"] },
+                        "description": "FR-VAULT-01: Client mã hoá trước khi gửi. file ≤10MB, pdf/png/jpg."
+                    }
+                },
+                {
+                    "name": "GET /documents/{id}/ciphertext — tải bản mã",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/octet-stream" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/documents/{{docId}}/ciphertext", "host": ["{{baseUrl}}{{apiPrefix}}", "documents", "{{docId}}", "ciphertext"], "path": ["documents", "{{docId}}", "ciphertext"] },
+                        "description": "Tải bản mã (IDOR protection qua DocumentPolicy). Nhập docId từ biến môi trường.",
+                        "variable": [ { "key": "docId", "value": "<<paste id từ GET /documents>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "DELETE /documents/{id} — xoá tài liệu",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/documents/{{docId}}", "host": ["{{baseUrl}}{{apiPrefix}}", "documents", "{{docId}}"], "path": ["documents", "{{docId}}"] },
+                        "description": "Xoá tài liệu (chỉ owner). Nhập docId.",
+                        "variable": [ { "key": "docId", "value": "<<paste id từ GET /documents>>", "type": "string" } ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "4. Tasks — Giao việc agent (FR-TASK-01, FR-AGENT-01)",
+            "item": [
+                {
+                    "name": "POST /tasks — tạo task mới",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "application/json" }
+                        ],
+                        "body": { "mode": "raw", "raw": "{\n  \"playbook_slug\": \"rental\",\n  \"instruction\": \"Nộp hồ sơ thuê căn hộ A\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/tasks", "host": ["{{baseUrl}}{{apiPrefix}}", "tasks"], "path": ["tasks"] },
+                        "description": "FR-TASK-01: Tạo task (proposing), đẩy GenerateProposalJob. Lấy taskId từ response."
+                    }
+                },
+                {
+                    "name": "GET /tasks — danh sách task của tôi",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/tasks", "host": ["{{baseUrl}}{{apiPrefix}}", "tasks"], "path": ["tasks"] },
+                        "description": "Danh sách task của owner hiện tại."
+                    }
+                },
+                {
+                    "name": "GET /tasks/{id} — chi tiết task",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/tasks/{{taskId}}", "host": ["{{baseUrl}}{{apiPrefix}}", "tasks", "{{taskId}}"], "path": ["tasks", "{{taskId}}"] },
+                        "description": "Trạng thái, đề xuất, log, kết quả, grant. Nhập taskId.",
+                        "variable": [ { "key": "taskId", "value": "<<paste id từ POST /tasks>>", "type": "string" } ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "5. Grants — Consent & duyệt (FR-GRANT-01, 02, 03, 05, 06)",
+            "item": [
+                {
+                    "name": "GET /grants/{id} — màn duyệt consent",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/grants/{{grantId}}", "host": ["{{baseUrl}}{{apiPrefix}}", "grants", "{{grantId}}"], "path": ["grants", "{{grantId}}"] },
+                        "description": "review.documents, ttl_options, default_ttl_minutes, remaining_seconds. Nhập grantId.",
+                        "variable": [ { "key": "grantId", "value": "<<paste grant id từ task>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "POST /grants/{id}/approve — duyệt grant",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            { "key": "Accept", "value": "application/json" },
+                            { "key": "Content-Type", "value": "multipart/form-data" }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                { "key": "doc_ids[]", "type": "text", "value": "<<paste doc_id từ vault>>" },
+                                { "key": "ttl_minutes", "type": "text", "value": "15" },
+                                { "key": "grant_key_b64", "type": "text", "value": "<<base64 key AES-256>>" },
+                                { "key": "bundle_iv", "type": "text", "value": "<<base64 iv 12 byte>>" },
+                                { "key": "bundle", "type": "file", "src": [] }
+                            ]
+                        },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/grants/{{grantId}}/approve", "host": ["{{baseUrl}}{{apiPrefix}}", "grants", "{{grantId}}", "approve"], "path": ["grants", "{{grantId}}", "approve"] },
+                        "description": "FR-GRANT-02: Kiểm tra quyền, phạm vi playbook, TTL. Grant → active, K_g vào Redis. Nhập grantId.",
+                        "variable": [ { "key": "grantId", "value": "<<paste grant id>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "POST /grants/{id}/deny — từ chối grant",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Không đồng ý chia sẻ hồ sơ này\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/grants/{{grantId}}/deny", "host": ["{{baseUrl}}{{apiPrefix}}", "grants", "{{grantId}}", "deny"], "path": ["grants", "{{grantId}}", "deny"] },
+                        "description": "FR-GRANT-06: Từ chối grant. Nhập grantId.",
+                        "variable": [ { "key": "grantId", "value": "<<paste grant id>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "POST /grants/{id}/revoke — thu hồi grant",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Thu hồi sớm vì lý do bảo mật\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/grants/{{grantId}}/revoke", "host": ["{{baseUrl}}{{apiPrefix}}", "grants", "{{grantId}}", "revoke"], "path": ["grants", "{{grantId}}", "revoke"] },
+                        "description": "FR-GRANT-03: Thu hồi grant, xoá K_g. Nhập grantId.",
+                        "variable": [ { "key": "grantId", "value": "<<paste grant id>>", "type": "string" } ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "6. Agent — mở grant & xin ngoài phạm vi",
+            "item": [
+                {
+                    "name": "POST /agent/grants/{grant}/open — agent mở grant",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/agent/grants/{{grantId}}/open", "host": ["{{baseUrl}}{{apiPrefix}}", "agent", "grants", "{{grantId}}", "open"], "path": ["agent", "grants", "{{grantId}}", "open"] },
+                        "description": "Agent có K_g trong Redis mở grant để lấy tài liệu đã duyệt. Nhập grantId.",
+                        "variable": [ { "key": "grantId", "value": "<<paste grant id>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "POST /agent/documents/request — OUT_OF_SCOPE (403)",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"doc_type\": \"medical_summary\",\n  \"reason\": \"Agent muốn xem toàn bộ hồ sơ khám bệnh\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/agent/documents/request", "host": ["{{baseUrl}}{{apiPrefix}}", "agent", "documents", "request"], "path": ["agent", "documents", "request"] },
+                        "description": "FR-AGENT-04: Agent xin tài liệu ngoài phạm vi playbook → trả 403 OUT_OF_SCOPE."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "7. Audit — hash-chain (FR-AUD-01..03)",
+            "item": [
+                {
+                    "name": "GET /audit — nhật ký sự kiện",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/audit?limit=50", "host": ["{{baseUrl}}{{apiPrefix}}", "audit"], "path": ["audit"], "query": [ { "key": "limit", "value": "50" } ] },
+                        "description": "Danh sách sự kiện audit (owner, admin)."
+                    }
+                },
+                {
+                    "name": "GET /audit/verify — xác minh chuỗi",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/audit/verify", "host": ["{{baseUrl}}{{apiPrefix}}", "audit", "verify"], "path": ["audit", "verify"] },
+                        "description": "FR-AUD-03: Xác minh toàn bộ chuỗi hash-chain hợp lệ hay không."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "8. Quorum — quản trị (FR-QRM-01..05)",
+            "item": [
+                {
+                    "name": "GET /admin/quorum/meta — meta quorum",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/quorum/meta", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "quorum", "meta"], "path": ["admin", "quorum", "meta"] },
+                        "description": "Ngưỡng, trạng thái reauth, QEA."
+                    }
+                },
+                {
+                    "name": "POST /admin/reauth — xác thực lại admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"password\": \"mat_khau_admin\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/reauth", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "reauth"], "path": ["admin", "reauth"] },
+                        "description": "FR-QRM-04: Xác thực lại trước khi duyệt Change Request (5 phút)."
+                    }
+                },
+                {
+                    "name": "GET /admin/change-requests — danh sách CR",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/change-requests", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "change-requests"], "path": ["admin", "change-requests"] },
+                        "description": "Danh sách Change Request."
+                    }
+                },
+                {
+                    "name": "POST /admin/change-requests — tạo CR",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"type\": \"role_grant\",\n  \"payload\": { \"user_id\": 2, \"role\": \"agent\" }\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/change-requests", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "change-requests"], "path": ["admin", "change-requests"] },
+                        "description": "Tạo CR (chờ duyệt quorum). Lấy crId từ response."
+                    }
+                },
+                {
+                    "name": "POST /admin/change-requests/{id}/approve — duyệt CR",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/change-requests/{{crId}}/approve", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "change-requests", "{{crId}}", "approve"], "path": ["admin", "change-requests", "{{crId}}", "approve"] },
+                        "description": "Duyệt CR (cần quorum đủ ngưỡng). Nhập crId.",
+                        "variable": [ { "key": "crId", "value": "<<paste id từ tạo CR>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "POST /admin/change-requests/{id}/reject — từ chối CR",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/change-requests/{{crId}}/reject", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "change-requests", "{{crId}}", "reject"], "path": ["admin", "change-requests", "{{crId}}", "reject"] },
+                        "description": "Từ chối CR. Nhập crId.",
+                        "variable": [ { "key": "crId", "value": "<<paste id từ tạo CR>>", "type": "string" } ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "9. Direct Change — phải bị chặn 409 (FR-QRM-01)",
+            "item": [
+                {
+                    "name": "POST /admin/direct/roles/grant → 409",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"role\": \"admin\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/direct/roles/grant", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "direct", "roles", "grant"], "path": ["admin", "direct", "roles", "grant"] },
+                        "description": "Đổi trực tiếp vai trò → phải trả 409 QUORUM_REQUIRED."
+                    }
+                },
+                {
+                    "name": "POST /admin/direct/roles/revoke → 409",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"user_id\": 1,\n  \"role\": \"admin\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/direct/roles/revoke", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "direct", "roles", "revoke"], "path": ["admin", "direct", "roles", "revoke"] },
+                        "description": "Thu hồi trực tiếp vai trò → 409 QUORUM_REQUIRED."
+                    }
+                },
+                {
+                    "name": "PATCH /admin/direct/playbooks/{slug} → 409",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"name\": \"Playbook bị sửa trực tiếp\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/direct/playbooks/{{slug}}", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "direct", "playbooks", "{{slug}}"], "path": ["admin", "direct", "playbooks", "{{slug}}"] },
+                        "description": "Sửa playbook trực tiếp → 409 QUORUM_REQUIRED.",
+                        "variable": [ { "key": "slug", "value": "rental", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "PATCH /admin/direct/quorum-threshold → 409",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"threshold\": 1\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/admin/direct/quorum-threshold", "host": ["{{baseUrl}}{{apiPrefix}}", "admin", "direct", "quorum-threshold"], "path": ["admin", "direct", "quorum-threshold"] },
+                        "description": "Đổi ngưỡng quorum trực tiếp → 409 QUORUM_REQUIRED."
+                    }
+                }
+            ]
+        },
+        {
+            "name": "10. Demo «Làm admin xấu» (APP_DEMO=true)",
+            "item": [
+                {
+                    "name": "POST /demo/evil/dump-db",
+                    "request": { "method": "POST", "header": [ { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/evil/dump-db", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "evil", "dump-db"], "path": ["demo", "evil", "dump-db"] }, "description": "FR-DEMO-01: Thử dump DB — phải bị chặn." }
+                },
+                {
+                    "name": "POST /demo/evil/self-elevate",
+                    "request": { "method": "POST", "header": [ { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/evil/self-elevate", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "evil", "self-elevate"], "path": ["demo", "evil", "self-elevate"] }, "description": "FR-DEMO-02: Thử tự nâng quyền admin — phải bị chặn." }
+                },
+                {
+                    "name": "POST /demo/evil/out-of-scope",
+                    "request": { "method": "POST", "header": [ { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/evil/out-of-scope", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "evil", "out-of-scope"], "path": ["demo", "evil", "out-of-scope"] }, "description": "FR-DEMO-03: Agent yêu cầu tài liệu ngoài phạm vi → 422 OUT_OF_SCOPE." }
+                },
+                {
+                    "name": "POST /demo/evil/slow-run",
+                    "request": {
+                        "method": "POST",
+                        "header": [ { "key": "Accept", "value": "application/json" }, { "key": "Content-Type", "value": "application/json" } ],
+                        "body": { "mode": "raw", "raw": "{\n  \"task_id\": \"<<paste task_id>>\"\n}" },
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/evil/slow-run", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "evil", "slow-run"], "path": ["demo", "evil", "slow-run"] },
+                        "description": "FR-DEMO-04: Agent chạy chậm (demo)."
+                    }
+                },
+                {
+                    "name": "GET /demo/evil/slow-run-log/{task}",
+                    "request": {
+                        "method": "GET",
+                        "header": [ { "key": "Accept", "value": "application/json" } ],
+                        "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/evil/slow-run-log/{{taskId}}", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "evil", "slow-run-log", "{{taskId}}"], "path": ["demo", "evil", "slow-run-log", "{{taskId}}"] },
+                        "description": "Xem log slow run.",
+                        "variable": [ { "key": "taskId", "value": "<<paste task_id>>", "type": "string" } ]
+                    }
+                },
+                {
+                    "name": "POST /demo/reset — reset dữ liệu demo",
+                    "request": { "method": "POST", "header": [ { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/reset", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "reset"], "path": ["demo", "reset"] }, "description": "Reset dữ liệu demo về trạng thái ban đầu." }
+                },
+                {
+                    "name": "POST /demo/agent-token — lấy token agent",
+                    "request": { "method": "POST", "header": [ { "key": "Accept", "value": "application/json" } ], "url": { "raw": "{{baseUrl}}{{apiPrefix}}/demo/agent-token", "host": ["{{baseUrl}}{{apiPrefix}}", "demo", "agent-token"], "path": ["demo", "agent-token"] }, "description": "Lấy token agent (demo) để gọi API agent." }
+                }
+            ]
+        }
+    ]
+}

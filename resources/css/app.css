@@ -3,9 +3,38 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
-@source '../**/*.js';
+@source '../**/*.{js,jsx}';
 
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-bg: oklch(99.2% 0 0);
+    --color-surface: oklch(98.4% 0 0);
+    --color-elevated: oklch(96.8% 0 0);
+    --color-border: oklch(89.5% 0 0);
+    --color-text: oklch(11.2% 0 0);
+    --color-muted: oklch(46% 0 0);
+    --color-subtle: oklch(84% 0 0);
+    --color-accent: oklch(20% 0 0);
+    --color-accent-hover: oklch(25% 0 0);
+    --color-success: oklch(75% -0.02 165);
+    --color-warning: oklch(72% 0.015 45);
+    --color-danger: oklch(62% 0.02 25);
+    --color-info: oklch(62% 0.01 240);
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+
+    --shadow-sm: 0 1px 2px oklch(0% 0 0 / 0.04);
+    --shadow: 0 4px 6px oklch(0% 0 0 / 0.06);
+    --shadow-lg: 0 10px 15px oklch(0% 0 0 / 0.08);
+
+    --easing: cubic-bezier(0.16, 1, 0.3, 1);
+    --motion-fast: 120ms;
+    --motion-base: 300ms;
+    --motion-emphasis: 500ms;
 }
