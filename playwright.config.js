@@ -26,6 +26,7 @@ export default defineConfig({
         trace: 'retain-on-failure',
         actionTimeout: 20_000,
         navigationTimeout: 45_000,
+        video: 'on',
     },
     webServer: {
         command: 'bash scripts/e2e-server.sh',

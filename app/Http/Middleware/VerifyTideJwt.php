@@ -76,7 +76,7 @@ class VerifyTideJwt
 
         $publicKey = $this->publicKeyForKid($kid);
 
-        $signingInput = $headerB64 . '.' . $payloadB64;
+        $signingInput = $headerB64.'.'.$payloadB64;
         $signature = $this->base64UrlDecode($signatureB64);
 
         if (openssl_verify($signingInput, $signature, $publicKey, OPENSSL_ALGO_SHA256) !== 1) {
@@ -125,10 +125,10 @@ class VerifyTideJwt
     private function publicKeyForKid(string $kid): string
     {
         $realm = config('tidecloak.realm');
-        $cacheKey = 'tidecloak.jwks.' . $realm;
+        $cacheKey = 'tidecloak.jwks.'.$realm;
 
-        $pemMap = Cache::remember($cacheKey, config('tidecloak.jwks_cache_seconds'), function (): array {
-            $url = config('tidecloak.url') . '/realms/' . $realm . '/protocol/openid-connect/certs';
+        $pemMap = Cache::remember($cacheKey, config('tidecloak.jwks_cache_seconds'), function () use ($realm): array {
+            $url = config('tidecloak.url').'/realms/'.$realm.'/protocol/openid-connect/certs';
 
             $response = Http::timeout(10)->get($url);
 
@@ -150,7 +150,7 @@ class VerifyTideJwt
         });
 
         if (! isset($pemMap[$kid])) {
-            throw new ApiException('UNAUTHENTICATED', 'Không tìm thấy public key cho kid ' . $kid, 401);
+            throw new ApiException('UNAUTHENTICATED', 'Không tìm thấy public key cho kid '.$kid, 401);
         }
 
         return $pemMap[$kid];
@@ -174,23 +174,23 @@ class VerifyTideJwt
         $n = $this->base64UrlDecode($nB64Url);
         $e = $this->base64UrlDecode($eB64Url);
 
-        if ($n[0] & 0x80) {
-            $n = "\x00" . $n;
+        if ((ord($n[0]) & 0x80) !== 0) {
+            $n = "\x00".$n;
         }
 
-        $nDer = "\x02" . $this->derLength(strlen($n)) . $n;
-        $eDer = "\x02" . $this->derLength(strlen($e)) . $e;
+        $nDer = "\x02".$this->derLength(strlen($n)).$n;
+        $eDer = "\x02".$this->derLength(strlen($e)).$e;
 
-        $seqInner = "\x30" . $this->derLength(strlen($nDer) + strlen($eDer)) . $nDer . $eDer;
+        $seqInner = "\x30".$this->derLength(strlen($nDer) + strlen($eDer)).$nDer.$eDer;
 
         // rsaEncryption OID: 1.2.840.113549.1.1.1
         $algOid = "\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01\x05\x00";
 
-        $spkiInner = $algOid . "\x03" . $this->derLength(1 + strlen($seqInner)) . "\x00" . $seqInner;
-        $spki = "\x30" . $this->derLength(strlen($spkiInner)) . $spkiInner;
+        $spkiInner = $algOid."\x03".$this->derLength(1 + strlen($seqInner))."\x00".$seqInner;
+        $spki = "\x30".$this->derLength(strlen($spkiInner)).$spkiInner;
 
         $pemBase64 = base64_encode($spki);
-        $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split($pemBase64, 64, "\n") . "-----END PUBLIC KEY-----\n";
+        $pem = "-----BEGIN PUBLIC KEY-----\n".chunk_split($pemBase64, 64, "\n")."-----END PUBLIC KEY-----\n";
 
         return $pem;
     }
@@ -203,12 +203,12 @@ class VerifyTideJwt
 
         $bytes = [];
         while ($length > 0) {
-            $bytes[] = $length & 0xff;
+            $bytes[] = $length & 0xFF;
             $length >>= 8;
         }
 
         $bytes = array_reverse($bytes);
 
-        return chr(0x80 | count($bytes)) . implode('', array_map('chr', $bytes));
+        return chr(0x80 | count($bytes)).implode('', array_map('chr', $bytes));
     }
 }

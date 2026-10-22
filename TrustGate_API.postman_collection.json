@@ -1,0 +1,1547 @@
+{
+  "info": {
+    "name": "TrustGate API v1",
+    "description": "Postman collection for testing all TrustGate API endpoints. Session-based auth (cookie). Run 'Setup → Login as Owner' first to get session cookie.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "trustgate-dev"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://localhost:8000",
+      "type": "string",
+      "description": "Base URL of the TrustGate API server"
+    },
+    {
+      "key": "LARAVEL_SESSION",
+      "value": "",
+      "type": "string",
+      "description": "Auto-filled after login. Laravel session cookie value."
+    }
+  ],
+  "auth": {
+    "type": "noauth"
+  },
+  "item": [
+    {
+      "name": "Setup / Test Data",
+      "item": [
+        {
+          "name": "1. Generate test PDF file (run locally)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/me",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "me"]
+            },
+            "description": "RUN THIS LOCALLY IN TERMINAL:\n\n```bash\n# Create a test PDF (10MB max)\necho 'Test document content for TrustGate' | base64 > /tmp/test-content.txt\n# Or use any PDF file:\ncp /path/to/your/document.pdf /tmp/test-document.pdf\n\n# For encrypted test, you'd encrypt client-side first (WebCrypto AES-GCM)\n# This collection uses placeholder values - replace with real encrypted data\n```\n\nThen set TEST_FILE_PATH in environment to your file path."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Login as Owner (get session cookie)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["login"]
+            },
+            "description": "Laravel session-based login. Cookie (laravel_session) is auto-saved to LARAVEL_SESSION variable.\n\nAfter login, subsequent requests will use the session cookie automatically via pre-request script.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{OWNER_EMAIL}}\",\n  \"password\": \"{{OWNER_PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 302) {",
+                  "  // Extract laravel_session cookie from response headers",
+                  "  const cookies = pm.response.headers.get('Set-Cookie');",
+                  "  if (cookies) {",
+                  "    const match = cookies.match(/laravel_session=([^;]+)/);",
+                  "    if (match) {",
+                  "      pm.environment.set('LARAVEL_SESSION', match[1]);",
+                  "      console.log('Saved LARAVEL_SESSION cookie');",
+                  "    }",
+                  "  }",
+                  "  // Also try to get from response cookies (Postman cookie jar)",
+                  "  const jar = pm.cookies.jar();",
+                  "  if (jar) {",
+                  "    jar.get('{{BASE_URL}}', 'laravel_session', (err, cookie) => {",
+                  "      if (cookie) {",
+                  "        pm.environment.set('LARAVEL_SESSION', cookie.value);",
+                  "        console.log('Saved LARAVEL_SESSION from jar');",
+                  "      }",
+                  "    });",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "3. Login as Admin (get session cookie)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/login",
+              "host": ["{{BASE_URL}}"],
+              "path": ["login"]
+            },
+            "description": "Laravel session-based login as admin. Cookie (laravel_session) is auto-saved to LARAVEL_SESSION variable.\n\nAfter login, subsequent requests will use the session cookie automatically via pre-request script.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{ADMIN_EMAIL}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 302) {",
+                  "  const cookies = pm.response.headers.get('Set-Cookie');",
+                  "  if (cookies) {",
+                  "    const match = cookies.match(/laravel_session=([^;]+)/);",
+                  "    if (match) {",
+                  "      pm.environment.set('LARAVEL_SESSION', match[1]);",
+                  "      console.log('Saved LARAVEL_SESSION cookie');",
+                  "    }",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "4. Enable Demo Mode & Get Demo Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/agent-token",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "agent-token"]
+            },
+            "description": "Requires APP_DEMO=true in .env. Generates agent token for testing agent endpoints.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"{{AGENT_CLIENT_ID}}\",\n  \"playbook_slugs\": [\"{{PLAYBOOK_SLUG}}\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.data?.token) {",
+                  "    pm.environment.set('AGENT_TOKEN', json.data.token);",
+                  "    pm.environment.set('DEMO_TOKEN', json.data.token);",
+                  "    console.log('Saved AGENT_TOKEN/DEMO_TOKEN');",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "GET /me - Current user profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/me",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "me"]
+            },
+            "description": "Get authenticated user profile (FR-AUTH-04). Throttle: 60/min"
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.data?.id) {",
+                  "    pm.environment.set('DOCUMENT_ID', json.data.id);",
+                  "    console.log('Saved DOCUMENT_ID:', json.data.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Playbooks",
+      "item": [
+        {
+          "name": "GET /playbooks - List all playbooks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/playbooks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "playbooks"]
+            },
+            "description": "List playbooks (FR-PB-01..02). Requires role: owner, admin. Throttle: 60/min"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vault - Documents",
+      "item": [
+        {
+          "name": "POST /documents - Upload encrypted document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/documents",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "documents"]
+            },
+            "description": "Upload encrypted document (FR-VAULT-01). Max 10MB. File must be encrypted client-side before upload. Throttle: 60/min",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{TEST_FILE_PATH}}",
+                  "description": "Encrypted file (max 10MB, PDF/PNG/JPG encrypted)"
+                },
+                {
+                  "key": "iv",
+                  "type": "text",
+                  "value": "{{SAMPLE_IV}}",
+                  "description": "Initialization vector (hex string, 16 bytes = 32 chars)"
+                },
+                {
+                  "key": "sha256",
+                  "type": "text",
+                  "value": "{{SAMPLE_SHA256}}",
+                  "description": "SHA-256 hash of plaintext (64 hex chars)"
+                },
+                {
+                  "key": "doc_type",
+                  "type": "text",
+                  "value": "{{DOC_TYPE_ID_CARD}}",
+                  "description": "Document type: id_card, income_proof, rental_history, reference_letter, insurance_card, medical_summary, lab_result"
+                },
+                {
+                  "key": "title_ct",
+                  "type": "text",
+                  "value": "{{SAMPLE_TITLE_CT}}",
+                  "description": "Encrypted title (base64)"
+                },
+                {
+                  "key": "enc_mode",
+                  "type": "text",
+                  "value": "fallback",
+                  "description": "Encryption mode: tide or fallback"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /documents - List documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/documents",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "documents"]
+            },
+            "description": "List user's documents (FR-VAULT-02). Throttle: 60/min",
+            "queryParams": [
+              {
+                "key": "per_page",
+                "value": "15",
+                "description": "Items per page"
+              },
+              {
+                "key": "doc_type",
+                "value": "",
+                "description": "Filter by doc_type (optional)"
+              }
+            ]
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.data?.length > 0 && json.data[0]?.id) {",
+                  "    pm.environment.set('DOCUMENT_ID', json.data[0].id);",
+                  "    console.log('Saved DOCUMENT_ID from list:', json.data[0].id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /documents/{document}/ciphertext - Download ciphertext",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/octet-stream"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/documents/{{DOCUMENT_ID}}/ciphertext",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "documents", "{{DOCUMENT_ID}}", "ciphertext"]
+            },
+            "description": "Download document ciphertext (FR-VAULT-03). Throttle: 60/min",
+            "variable": [
+              {
+                "key": "DOCUMENT_ID",
+                "value": "",
+                "description": "UUID of the document"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /documents/{document} - Delete document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/documents/{{DOCUMENT_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "documents", "{{DOCUMENT_ID}}"]
+            },
+            "description": "Delete document (FR-VAULT-04). Throttle: 60/min",
+            "variable": [
+              {
+                "key": "DOCUMENT_ID",
+                "value": "",
+                "description": "UUID of the document to delete"
+              }
+            ]
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Vault - Grants",
+      "item": [
+        {
+          "name": "GET /grants/{grant} - View grant details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/grants/{{GRANT_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "grants", "{{GRANT_ID}}"]
+            },
+            "description": "View grant details (FR-VAULT-05)",
+            "variable": [
+              {
+                "key": "GRANT_ID",
+                "value": "",
+                "description": "UUID of the grant"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "POST /grants/{grant}/approve - Approve grant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/grants/{{GRANT_ID}}/approve",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "grants", "{{GRANT_ID}}", "approve"]
+            },
+            "description": "Approve grant with encrypted bundle (FR-VAULT-05). Throttle: 60/min",
+            "variable": [
+              {
+                "key": "GRANT_ID",
+                "value": "",
+                "description": "UUID of the grant to approve"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "doc_ids[]",
+                  "type": "text",
+                  "value": "{{DOCUMENT_ID}}",
+                  "description": "UUID of document to include (from uploaded document)"
+                },
+                {
+                  "key": "doc_ids[]",
+                  "type": "text",
+                  "value": "{{DOCUMENT_ID_2}}",
+                  "description": "Another document UUID (optional)"
+                },
+                {
+                  "key": "ttl_minutes",
+                  "type": "text",
+                  "value": "60",
+                  "description": "Grant TTL in minutes (options: 5, 15, 60, 1440)"
+                },
+                {
+                  "key": "grant_key_b64",
+                  "type": "text",
+                  "value": "{{SAMPLE_GRANT_KEY_B64}}",
+                  "description": "Base64 encoded grant key (32 bytes = 44 chars)"
+                },
+                {
+                  "key": "bundle_iv",
+                  "type": "text",
+                  "value": "{{SAMPLE_BUNDLE_IV}}",
+                  "description": "Bundle IV (base64, 12 bytes)"
+                },
+                {
+                  "key": "bundle",
+                  "type": "file",
+                  "src": "{{TEST_BUNDLE_PATH}}",
+                  "description": "Encrypted bundle file (max 50MB)"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /grants/{grant}/deny - Deny grant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/grants/{{GRANT_ID}}/deny",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "grants", "{{GRANT_ID}}", "deny"]
+            },
+            "description": "Deny grant request. Throttle: 60/min",
+            "variable": [
+              {
+                "key": "GRANT_ID",
+                "value": "",
+                "description": "UUID of the grant to deny"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "POST /grants/{grant}/revoke - Revoke grant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/grants/{{GRANT_ID}}/revoke",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "grants", "{{GRANT_ID}}", "revoke"]
+            },
+            "description": "Revoke active grant. Throttle: 60/min",
+            "variable": [
+              {
+                "key": "GRANT_ID",
+                "value": "",
+                "description": "UUID of the grant to revoke"
+              }
+            ]
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agent - Grants",
+      "item": [
+        {
+          "name": "POST /agent/grants/{grant}/open - Agent opens grant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/agent/grants/{{GRANT_ID}}/open",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "agent", "grants", "{{GRANT_ID}}", "open"]
+            },
+            "description": "Agent opens approved grant (FR-AGENT-03). Throttle: 30/min",
+            "variable": [
+              {
+                "key": "GRANT_ID",
+                "value": "",
+                "description": "UUID of the grant to open"
+              }
+            ]
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Agent - Documents",
+      "item": [
+        {
+          "name": "POST /agent/documents/request - Request out-of-scope document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/agent/documents/request",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "agent", "documents", "request"]
+            },
+            "description": "Agent requests document outside scope (FR-AGENT-04). Returns 403 OUT_OF_SCOPE. Requires role: agent. Throttle: 30/min",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grant_id\": \"{{GRANT_ID}}\",\n  \"doc_type\": \"{{DOC_TYPE_MEDICAL_SUMMARY}}\",\n  \"reason\": \"Need medical summary for insurance claim\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "POST /tasks - Create agent task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "tasks"]
+            },
+            "description": "Create task for agent (FR-TASK-01, FR-AGENT-01). Throttle: 60/min",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playbook_slug\": \"{{PLAYBOOK_SLUG}}\",\n  \"instruction\": \"Verify customer identity using uploaded documents\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.data?.id) {",
+                  "    pm.environment.set('TASK_ID', json.data.id);",
+                  "    console.log('Saved TASK_ID:', json.data.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /tasks - List tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tasks",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "tasks"]
+            },
+            "description": "List tasks (FR-TASK-01). Throttle: 60/min",
+            "queryParams": [
+              {
+                "key": "per_page",
+                "value": "15",
+                "description": "Items per page"
+              },
+              {
+                "key": "status",
+                "value": "",
+                "description": "Filter by status: pending, running, completed, failed"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "GET /tasks/{task} - View task details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/tasks/{{TASK_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "tasks", "{{TASK_ID}}"]
+            },
+            "description": "View task details with steps and results. Throttle: 60/min",
+            "variable": [
+              {
+                "key": "TASK_ID",
+                "value": "",
+                "description": "UUID of the task"
+              }
+            ]
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Audit (Owner/Admin)",
+      "item": [
+        {
+          "name": "GET /audit - List audit logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/audit",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "audit"]
+            },
+            "description": "List hash-chain audit logs (FR-AUD-01..03). Requires role: owner, admin. Throttle: 60/min",
+            "queryParams": [
+              {
+                "key": "per_page",
+                "value": "50",
+                "description": "Items per page"
+              },
+              {
+                "key": "event",
+                "value": "",
+                "description": "Filter by event type"
+              },
+              {
+                "key": "user_id",
+                "value": "",
+                "description": "Filter by user ID"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "GET /audit/verify - Verify hash chain",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/audit/verify",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "audit", "verify"]
+            },
+            "description": "Verify audit log hash chain integrity (FR-AUD-03). Requires role: owner, admin. Throttle: 60/min"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - Quorum Management",
+      "item": [
+        {
+          "name": "GET /admin/quorum/meta - Get quorum metadata",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/quorum/meta",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "quorum", "meta"]
+            },
+            "description": "Get quorum configuration (FR-QRM-01..05). Requires role: admin"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/reauth - Re-authenticate admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/reauth",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "reauth"]
+            },
+            "description": "Re-authenticate for sensitive admin actions. Throttle: 10/min",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"current-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - Change Requests",
+      "item": [
+        {
+          "name": "GET /admin/change-requests - List change requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests"]
+            },
+            "description": "List all change requests. Requires role: admin",
+            "queryParams": [
+              {
+                "key": "per_page",
+                "value": "20",
+                "description": "Items per page"
+              },
+              {
+                "key": "status",
+                "value": "",
+                "description": "Filter: pending, approved, rejected, executed"
+              },
+              {
+                "key": "type",
+                "value": "",
+                "description": "Filter by type"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/change-requests - Create change request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests"]
+            },
+            "description": "Create change request (FR-QRM-01). Requires role: admin. Type determines payload schema.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"role_grant\",\n  \"payload\": {\n    \"email\": \"user@example.com\",\n    \"role\": \"admin\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.data?.id) {",
+                  "    pm.environment.set('CR_ID', json.data.id);",
+                  "    console.log('Saved CR_ID:', json.data.id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /admin/change-requests - Create role_revoke",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests"]
+            },
+            "description": "Create role_revoke change request. Requires role: admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"role_revoke\",\n  \"payload\": {\n    \"email\": \"user@example.com\",\n    \"role\": \"admin\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/change-requests - Create playbook_update",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests"]
+            },
+            "description": "Create playbook_update change request. Requires role: admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"playbook_update\",\n  \"payload\": {\n    \"slug\": \"{{PLAYBOOK_SLUG}}\",\n    \"required_doc_types\": [\"{{DOC_TYPE_ID_CARD}}\", \"{{DOC_TYPE_INCOME_PROOF}}\"],\n    \"default_ttl_minutes\": 60,\n    \"max_ttl_minutes\": 1440\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/change-requests - Create agent_allowlist_update",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests"]
+            },
+            "description": "Create agent_allowlist_update change request. Requires role: admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"agent_allowlist_update\",\n  \"payload\": {\n    \"client_id\": \"{{AGENT_CLIENT_ID}}\",\n    \"allowed_playbooks\": [\"{{PLAYBOOK_SLUG}}\"]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/change-requests - Create quorum_threshold_update",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests"]
+            },
+            "description": "Create quorum_threshold_update change request. Requires role: admin.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"quorum_threshold_update\",\n  \"payload\": {\n    \"required_approvals\": 3\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/change-requests/{id}/approve - Approve change request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests/{{CR_ID}}/approve",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests", "{{CR_ID}}", "approve"]
+            },
+            "description": "Approve change request. Requires quorum. Throttle: 60/min",
+            "variable": [
+              {
+                "key": "CR_ID",
+                "value": "",
+                "description": "UUID of the change request"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/change-requests/{id}/reject - Reject change request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/change-requests/{{CR_ID}}/reject",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "change-requests", "{{CR_ID}}", "reject"]
+            },
+            "description": "Reject change request. Throttle: 60/min",
+            "variable": [
+              {
+                "key": "CR_ID",
+                "value": "",
+                "description": "UUID of the change request"
+              }
+            ]
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - Direct Changes (Blocked by Quorum)",
+      "item": [
+        {
+          "name": "POST /admin/direct/roles/grant - Grant role directly (409 expected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/direct/roles/grant",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "direct", "roles", "grant"]
+            },
+            "description": "Direct role grant - blocked by quorum (FR-QRM-01). Returns 409 QUORUM_REQUIRED",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/direct/roles/revoke - Revoke role directly (409 expected)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/direct/roles/revoke",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "direct", "roles", "revoke"]
+            },
+            "description": "Direct role revoke - blocked by quorum. Returns 409 QUORUM_REQUIRED",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"role\": \"admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /admin/direct/playbooks/{slug} - Update playbook directly (409 expected)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/direct/playbooks/{{PLAYBOOK_SLUG}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "direct", "playbooks", "{{PLAYBOOK_SLUG}}"]
+            },
+            "description": "Direct playbook update - blocked by quorum. Returns 409 QUORUM_REQUIRED",
+            "variable": [
+              {
+                "key": "PLAYBOOK_SLUG",
+                "value": "{{PLAYBOOK_SLUG}}",
+                "description": "Playbook slug to update"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"required_doc_types\": [\"id_card\", \"income_proof\"],\n  \"default_ttl_minutes\": 60\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /admin/direct/agents/{clientId}/allowlist - Update agent allowlist (409 expected)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/direct/agents/{{CLIENT_ID}}/allowlist",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "direct", "agents", "{{CLIENT_ID}}", "allowlist"]
+            },
+            "description": "Direct agent allowlist update - blocked by quorum. Returns 409 QUORUM_REQUIRED",
+            "variable": [
+              {
+                "key": "CLIENT_ID",
+                "value": "agent_abc123",
+                "description": "Agent client_id"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"allowed_playbooks\": [\"kyc_verification\", \"loan_processing\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /admin/direct/quorum-threshold - Update quorum threshold (409 expected)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/admin/direct/quorum-threshold",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "admin", "direct", "quorum-threshold"]
+            },
+            "description": "Direct quorum threshold update - blocked by quorum. Returns 409 QUORUM_REQUIRED",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"required_approvals\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Demo - Evil Admin (APP_DEMO=true only)",
+      "item": [
+        {
+          "name": "POST /demo/evil/dump-db - Dump database",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/evil/dump-db",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "evil", "dump-db"]
+            },
+            "description": "Demo: Dump database (FR-DEMO-01). Requires APP_DEMO=true, role: admin"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /demo/evil/self-elevate - Self elevate to owner",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/evil/self-elevate",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "evil", "self-elevate"]
+            },
+            "description": "Demo: Self-elevate to owner (FR-DEMO-02). Requires APP_DEMO=true, role: admin"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /demo/evil/out-of-scope - Access out of scope",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/evil/out-of-scope",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "evil", "out-of-scope"]
+            },
+            "description": "Demo: Access out-of-scope data (FR-DEMO-03). Requires APP_DEMO=true, role: admin"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /demo/evil/slow-run - Trigger slow run",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/evil/slow-run",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "evil", "slow-run"]
+            },
+            "description": "Demo: Trigger slow agent run (FR-DEMO-04). Requires APP_DEMO=true, role: admin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"playbook_slug\": \"{{PLAYBOOK_SLUG}}\",\n  \"instruction\": \"Slow run for demo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /demo/evil/slow-run-log/{task} - View slow run log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/evil/slow-run-log/{{TASK_ID}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "evil", "slow-run-log", "{{TASK_ID}}"]
+            },
+            "description": "Demo: View slow run log. Requires APP_DEMO=true, role: admin",
+            "variable": [
+              {
+                "key": "TASK_ID",
+                "value": "",
+                "description": "Task UUID from slow-run response"
+              }
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "POST /demo/reset - Reset demo data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/reset",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "reset"]
+            },
+            "description": "Demo: Reset all demo data (FR-DEMO-05). Requires APP_DEMO=true, role: admin"
+          },
+          "response": []
+        },
+        {
+          "name": "POST /demo/agent-token - Generate agent token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/demo/agent-token",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "v1", "demo", "agent-token"]
+            },
+            "description": "Demo: Generate agent token for testing. Requires APP_DEMO=true, role: admin",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"client_id\": \"demo-agent-001\",\n  \"playbook_slugs\": [\"kyc_verification\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  if (json.data?.token) {",
+                  "    pm.environment.set('AGENT_TOKEN', json.data.token);",
+                  "    console.log('Saved AGENT_TOKEN:', json.data.token);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-add Laravel session cookie for session-based auth",
+          "const session = pm.variables.get('LARAVEL_SESSION');",
+          "if (session) {",
+          "  pm.request.headers.add({",
+          "    key: 'Cookie',",
+          "    value: 'laravel_session=' + session,",
+          "    disabled: false",
+          "  });",
+          "}"
+        ]
+      }
+    }
+  ]
+}

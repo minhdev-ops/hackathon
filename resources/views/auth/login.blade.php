@@ -14,14 +14,14 @@
                 </span>
                 <div>
                     <h1 class="text-lg font-semibold">TrustGate</h1>
-                    <p class="text-xs text-slate-500">Quorum quản trị · TideCloak Hackathon</p>
+                    <p class="text-xs text-slate-500">Két dữ liệu &amp; Consent Broker cho AI Agent</p>
                 </div>
             </div>
 
             <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h2 class="text-base font-semibold">Đăng nhập admin</h2>
+                <h2 class="text-base font-semibold">Đăng nhập</h2>
                 <p class="mt-1 text-xs text-slate-500">
-                    Chỉ tài khoản có vai trò <span class="font-medium">admin</span> mới vào được màn quorum.
+                    Dùng tài khoản của bạn để vào két dữ liệu.
                 </p>
 
                 @if ($errors->any())
@@ -41,9 +41,10 @@
                             id="email"
                             name="email"
                             type="email"
-                            value="{{ old('email', 'admin1@example.com') }}"
+                            value="{{ old('email') }}"
                             required
                             autofocus
+                            autocomplete="email"
                             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                         >
                     </div>
@@ -56,8 +57,8 @@
                             id="password"
                             name="password"
                             type="password"
-                            value="password"
                             required
+                            autocomplete="current-password"
                             class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
                         >
                     </div>
@@ -74,21 +75,23 @@
                         Đăng nhập
                     </button>
                 </form>
+
+                <p class="mt-4 text-center text-xs text-slate-600">
+                    Chưa có tài khoản?
+                    <a href="/register" class="font-medium text-indigo-600 hover:underline">Đăng ký</a>
+                </p>
             </div>
 
             <div class="mt-5 rounded-xl border border-slate-200 bg-white/80 p-4 text-xs text-slate-600">
                 <p class="font-medium text-slate-700">Tài khoản demo (mật khẩu: password)</p>
                 <ul class="mt-2 space-y-1 font-mono text-[11px]">
+                    <li>lan@example.com · owner</li>
                     <li>admin1@example.com · admin</li>
                     <li>admin2@example.com · admin</li>
                     <li>admin3@example.com · admin</li>
-                    <li>lan@example.com · owner</li>
+                    <li>agent@example.com · agent</li>
                 </ul>
             </div>
-
-            <p class="mt-4 text-center text-xs text-slate-500">
-                Đăng nhập tạm cho demo cục bộ — TideCloak OIDC sẽ thay thế ở WP3.
-            </p>
         </div>
     </body>
 </html>

@@ -3,6 +3,7 @@
 namespace Tests\Feature\Infra;
 
 use App\Models\Document;
+use App\Models\User;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -36,7 +37,7 @@ class SecurityRegressionTest extends TestCase
 
     public function test_audit_log_never_contains_secrets_or_plaintext(): void
     {
-        $owner = \App\Models\User::where('email', 'lan@example.com')->firstOrFail();
+        $owner = User::where('email', 'lan@example.com')->firstOrFail();
 
         // Chạy một luồng thật để sinh audit (tạo task → proposal → grant pending).
         $this->actingAs($owner)->postJson('/api/v1/tasks', [
@@ -64,7 +65,7 @@ class SecurityRegressionTest extends TestCase
 
     public function test_api_responses_do_not_leak_plaintext_or_internal_paths(): void
     {
-        $owner = \App\Models\User::where('email', 'lan@example.com')->firstOrFail();
+        $owner = User::where('email', 'lan@example.com')->firstOrFail();
 
         $this->actingAs($owner)->postJson('/api/v1/tasks', [
             'playbook_slug' => 'rental',

@@ -396,7 +396,7 @@ class QuorumTest extends TestCase
     {
         $this->withoutVite();
 
-        $this->get('/login')->assertOk()->assertSee('Đăng nhập admin');
+        $this->get('/login')->assertOk()->assertSee('Đăng nhập', false);
 
         $this->actingAs($this->admin1)->get('/admin/quorum')
             ->assertOk()

@@ -1,0 +1,16 @@
+{"version":10,"type":"context-options","origin":"library","browserName":"","playwrightVersion":"1.64.1","options":{},"platform":"linux","wallTime":1792665406807,"monotonicTime":103242.589,"sdkLanguage":"javascript","title":"07-api-smoke.spec.js:13 › API và tích hợp TideCloak › TideCloak realm trả discovery document"}
+{"type":"before","callId":"hcaz@108","startTime":103244.564,"class":"APIRequestContext","method":"fetch","params":{"url":"http://localhost:8080/realms/myrealm/.well-known/openid-configuration","method":"GET","timeout":20000}}
+{"type":"log","callId":"hcaz@108","time":103250.761,"message":"→ GET http://localhost:8080/realms/myrealm/.well-known/openid-configuration"}
+{"type":"log","callId":"hcaz@108","time":103250.835,"message":"  user-agent: Playwright/1.64.1 (x64; ubuntu 22.04) node/22.23"}
+{"type":"log","callId":"hcaz@108","time":103250.847,"message":"  accept: */*"}
+{"type":"log","callId":"hcaz@108","time":103250.856,"message":"  accept-encoding: gzip,deflate,br"}
+{"type":"log","callId":"hcaz@108","time":103273.677,"message":"← 200 OK"}
+{"type":"log","callId":"hcaz@108","time":103273.702,"message":"  content-length: 6595"}
+{"type":"log","callId":"hcaz@108","time":103273.712,"message":"  cache-control: no-cache, must-revalidate, no-transform, no-store"}
+{"type":"log","callId":"hcaz@108","time":103273.72,"message":"  content-type: application/json"}
+{"type":"log","callId":"hcaz@108","time":103273.769,"message":"  referrer-policy: no-referrer"}
+{"type":"log","callId":"hcaz@108","time":103273.778,"message":"  strict-transport-security: max-age=31536000; includeSubDomains"}
+{"type":"log","callId":"hcaz@108","time":103273.786,"message":"  x-content-type-options: nosniff"}
+{"type":"log","callId":"hcaz@108","time":103273.794,"message":"  x-frame-options: SAMEORIGIN"}
+{"type":"log","callId":"hcaz@108","time":103273.802,"message":"  x-robots-tag: none"}
+{"type":"after","callId":"hcaz@108","endTime":103273.994,"result":{"response":{"url":"http://localhost:8080/realms/myrealm/.well-known/openid-configuration","status":200,"statusText":"OK","headers":[{"name":"content-length","value":"6595"},{"name":"Cache-Control","value":"no-cache, must-revalidate, no-transform, no-store"},{"name":"Content-Type","value":"application/json"},{"name":"Referrer-Policy","value":"no-referrer"},{"name":"Strict-Transport-Security","value":"max-age=31536000; includeSubDomains"},{"name":"X-Content-Type-Options","value":"nosniff"},{"name":"X-Frame-Options","value":"SAMEORIGIN"},{"name":"X-Robots-Tag","value":"none"}],"serverAddr":{"ipAddress":"127.0.0.1","port":8080},"timing":{"startTime":1792665406809,"domainLookupStart":0,"domainLookupEnd":11.977000000013504,"connectStart":11.977000000013504,"secureConnectionStart":-1,"connectEnd":12.336999999999534,"requestStart":12.336999999999534,"responseStart":27.06600000000617},"responseEndTiming":27.75800000000163,"fetchUid":"5c967158b34f59ec3898bf3c84fa3682"}}}

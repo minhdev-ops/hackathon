@@ -5,7 +5,7 @@ export const Input = forwardRef(function Input({ className = '', id, ...props },
         <input
             ref={ref}
             id={id}
-            className={`w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm text-text placeholder-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition disabled:opacity-60 disabled:pointer-events-none ${className}`}
+            className={`w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-text placeholder-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition disabled:opacity-50 disabled:pointer-events-none ${className}`}
             {...props}
         />
     );
@@ -18,7 +18,7 @@ export const Label = forwardRef(function Label({ className = '', htmlFor, childr
         <label
             ref={ref}
             htmlFor={htmlFor}
-            className={`mb-1.5 block text-xs font-medium text-muted uppercase tracking-wider ${className}`}
+            className={`mb-2 block text-sm font-medium text-text ${className}`}
         >
             {children}
         </label>
@@ -32,7 +32,7 @@ export const Select = forwardRef(function Select({ className = '', id, ...props 
         <select
             ref={ref}
             id={id}
-            className={`w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition disabled:opacity-60 disabled:pointer-events-none ${className}`}
+            className={`w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-text focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition disabled:opacity-50 disabled:pointer-events-none ${className}`}
             {...props}
         />
     );
@@ -45,10 +45,14 @@ export const Textarea = forwardRef(function Textarea({ className = '', id, ...pr
         <textarea
             ref={ref}
             id={id}
-            className={`w-full rounded-md border border-border bg-bg px-3 py-2.5 text-sm text-text placeholder-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition disabled:opacity-60 disabled:pointer-events-none ${className}`}
+            className={`w-full rounded-md border border-border bg-surface px-3 py-2.5 text-sm text-text placeholder-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition disabled:opacity-50 disabled:pointer-events-none ${className}`}
             {...props}
         />
     );
 });
 
 Textarea.displayName = 'Textarea';
+
+export const FieldError = ({ message }) => (
+    <p className="mt-1.5 text-xs text-danger">{message}</p>
+);

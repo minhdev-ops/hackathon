@@ -1,0 +1,1 @@
+{"error":{"code":"QUORUM_REQUIRED","message":"Thay \u0111\u1ed5i n\u00e0y ph\u1ea3i \u0111\u01b0\u1ee3c duy\u1ec7t qua Change Request (quorum admin).","details":{"change_request_type":"quorum_threshold_update","create_endpoint":"\/api\/v1\/admin\/change-requests"}}}

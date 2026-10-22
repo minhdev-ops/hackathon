@@ -14,72 +14,71 @@
 ```
 Error: expect(locator).toBeVisible() failed
 
-Locator: getByRole('link', { name: 'Nhật ký' })
+Locator: getByRole('heading', { name: 'Xin chào, lan' })
 Expected: visible
-Error: strict mode violation: getByRole('link', { name: 'Nhật ký' }) resolved to 2 elements:
-    1) <a href="/timeline" data-discover="true" class="rounded-md px-3 py-2 text-sm font-medium transition text-text hover:bg-elevated">Nhật ký</a> aka getByRole('navigation', { name: 'Chính đầu điều hướng' }).getByRole('link', { name: 'Nhật ký' })
-    2) <a href="/timeline" data-discover="true" class="rounded border border-[#d6d6d2] px-3 py-2 hover:bg-[#f3f3f2]">Nhật ký</a> aka getByRole('main').getByRole('link', { name: 'Nhật ký' })
+Timeout: 15000ms
+Error: element(s) not found
 
 Call log:
-  - Expect "toBeVisible" getByRole('link', { name: 'Nhật ký' }) with timeout 15000ms
-  - waiting for getByRole('link', { name: 'Nhật ký' })
+  - Expect "toBeVisible" getByRole('heading', { name: 'Xin chào, lan' }) with timeout 15000ms
+  - waiting for getByRole('heading', { name: 'Xin chào, lan' })
 
 ```
 
-# Page snapshot
-
 ```yaml
-- generic [ref=f1e3]:
-  - banner [ref=f1e4]:
-    - generic [ref=f1e6]:
-      - link "Trang chủ TrustGate" [ref=f1e7] [cursor=pointer]:
-        - /url: /
-        - generic [ref=f1e8]: TG
-        - generic [ref=f1e9]: TrustGate
-      - navigation "Chính đầu điều hướng" [ref=f1e10]:
-        - link "Trang chủ" [ref=f1e11] [cursor=pointer]:
-          - /url: /
-        - link "Két tài liệu" [ref=f1e12] [cursor=pointer]:
-          - /url: /vault
-        - link "Playbook" [ref=f1e13] [cursor=pointer]:
-          - /url: /playbooks
-        - link "Agent Console" [ref=f1e14] [cursor=pointer]:
-          - /url: /agent-console
-        - link "Nhật ký" [ref=f1e15] [cursor=pointer]:
-          - /url: /timeline
-      - generic [ref=f1e16]:
-        - generic [ref=f1e17]:
-          - generic [ref=f1e18]: lan
-          - generic [ref=f1e19]: owner
-        - button "Đăng xuất" [ref=f1e20]
-        - link "Demo admin xấu" [ref=f1e21] [cursor=pointer]:
-          - /url: /admin/evil
-  - main [ref=f1e22]:
-    - generic [ref=f1e24]:
-      - generic [ref=f1e25]:
-        - generic [ref=f1e26]:
-          - paragraph [ref=f1e27]: TrustGate
-          - heading "Xin chào, lan" [level=1] [ref=f1e28]
-          - paragraph [ref=f1e29]: Owner duyệt từng lần chia sẻ; khoá két chỉ nằm trong trình duyệt.
-        - navigation [ref=f1e30]:
-          - link "Nhật ký" [ref=f1e31] [cursor=pointer]:
-            - /url: /timeline
-          - link "Quorum" [ref=f1e32] [cursor=pointer]:
-            - /url: /admin/quorum
-          - link "Demo admin xấu" [ref=f1e33] [cursor=pointer]:
-            - /url: /admin/evil
-          - button "Đăng xuất" [ref=f1e35]
-      - article [ref=f1e37]:
-        - generic [ref=f1e38]:
-          - generic [ref=f1e39]:
-            - heading "Nộp hồ sơ thuê căn hộ demo" [level=2] [ref=f1e40]
-            - paragraph [ref=f1e41]: TrustGate Agent · Thuê nhà
-          - generic [ref=f1e42]: Chờ owner duyệt
-        - paragraph [ref=f1e43]: Chủ nhà cần giấy tờ tuỳ thân và chứng minh thu nhập trước khi ký hợp đồng.
-        - generic [ref=f1e44]:
-          - generic [ref=f1e45]: "Grant: pending"
-          - link "Mở màn duyệt" [ref=f1e46] [cursor=pointer]:
-            - /url: /grants/01a162ae-a805-735d-927e-25927f78cebf
+- banner:
+  - link "Trang chủ TrustGate":
+    - /url: /
+    - text: TG TrustGate
+  - text: OWNER · lan@example.com
+  - navigation "Chính đầu điều hướng":
+    - link "Trang chủ":
+      - /url: /
+    - link "Két tài liệu":
+      - /url: /vault
+    - link "Playbook":
+      - /url: /playbooks
+    - link "Agent Console":
+      - /url: /agent-console
+    - link "Nhật ký":
+      - /url: /timeline
+  - button "Đăng xuất"
+- main:
+  - text: TrustGate · Consent Broker
+  - heading "Két dữ liệu và Consent Broker cho AI Agent" [level=1]
+  - paragraph: Agent chỉ nhận đúng phần được duyệt, cho đúng mục đích, trong thời hạn nhất định, và quyền này thu hồi được. Mọi thay đổi quản trị đều cần quorum admin duyệt.
+  - link "Bắt đầu với Két tài liệu":
+    - /url: /vault
+  - link "Xem Playbook":
+    - /url: /playbooks
+  - heading "Bắt đầu từ" [level=2]
+  - link "Két tài liệu":
+    - /url: /vault
+    - img
+    - heading "Két tài liệu" [level=3]
+    - paragraph: Tải lên, mã hoá và quản lý giấy tờ nhạy cảm trong két.
+    - text: Bắt đầu từ đây
+  - link "Chọn playbook":
+    - /url: /playbooks
+    - img
+    - heading "Chọn playbook" [level=3]
+    - paragraph: Xem lĩnh vực và giao việc cho agent thực hiện.
+  - link "Agent Console":
+    - /url: /agent-console
+    - img
+    - heading "Agent Console" [level=3]
+    - paragraph: Theo dõi log agent và kiểm tra quy tắc phạm vi.
+  - link "Nhật ký hoạt động":
+    - /url: /timeline
+    - img
+    - heading "Nhật ký hoạt động" [level=3]
+    - paragraph: Xem chuỗi sự kiện append-only và xác minh hash-chain.
+  - link "Demo «Làm admin xấu»":
+    - /url: /admin/evil
+    - img
+    - heading "Demo «Làm admin xấu»" [level=3]
+    - paragraph: Kịch bản thử thách bảo mật (chỉ khi bật demo).
+  - paragraph: "Prototype hackathon · 2 playbook: Thuê nhà, Khám bệnh · Chế độ mã hoá fallback (WebCrypto)"
 ```
 
 # Test source
@@ -92,7 +91,7 @@ Call log:
   5  |     test('hiển thị trang đăng nhập và tài khoản demo', async ({ page }) => {
   6  |         await page.goto('/login');
   7  | 
-  8  |         await expect(page.getByRole('heading', { name: 'Đăng nhập admin' })).toBeVisible();
+  8  |         await expect(page.getByRole('heading', { name: 'Đăng nhập', exact: true })).toBeVisible();
   9  |         await expect(page.getByText('admin1@example.com · admin')).toBeVisible();
   10 |         await expect(page.getByText('lan@example.com · owner')).toBeVisible();
   11 |         await shot(page, '01-login');
@@ -111,21 +110,23 @@ Call log:
   24 |     test('owner đăng nhập vào trang chủ và thấy việc demo', async ({ page }) => {
   25 |         await login(page, 'lan@example.com', '/');
   26 | 
-  27 |         await expect(page.getByRole('heading', { name: 'Xin chào, lan' })).toBeVisible();
+> 27 |         await expect(page.getByRole('heading', { name: 'Xin chào, lan' })).toBeVisible();
+     |                                                                            ^ Error: expect(locator).toBeVisible() failed
   28 |         await expect(page.getByText('Nộp hồ sơ thuê căn hộ demo')).toBeVisible();
   29 |         await expect(page.getByRole('link', { name: 'Mở màn duyệt' })).toBeVisible();
-> 30 |         await expect(page.getByRole('link', { name: 'Nhật ký' })).toBeVisible();
-     |                                                                   ^ Error: expect(locator).toBeVisible() failed
-  31 |         await shot(page, '03-owner-home');
-  32 |     });
-  33 | 
-  34 |     test('admin đăng nhập vào màn quorum', async ({ page }) => {
-  35 |         await login(page, 'admin1@example.com', '/admin/quorum');
-  36 | 
-  37 |         await expect(page.getByRole('heading', { name: 'TrustGate · Quorum quản trị' })).toBeVisible();
-  38 |         await expect(page.getByText('Cần xác thực lại trước khi duyệt')).toBeVisible();
-  39 |         await shot(page, '04-admin-quorum');
-  40 |     });
-  41 | });
-  42 | 
+  30 |         await expect(
+  31 |             page.getByRole('main').getByRole('link', { name: 'Nhật ký' }),
+  32 |         ).toBeVisible();
+  33 |         await shot(page, '03-owner-home');
+  34 |     });
+  35 | 
+  36 |     test('admin đăng nhập vào màn quorum', async ({ page }) => {
+  37 |         await login(page, 'admin1@example.com', '/admin/quorum');
+  38 | 
+  39 |         await expect(page.getByRole('heading', { name: 'TrustGate · Quorum quản trị' })).toBeVisible();
+  40 |         await expect(page.getByText('Cần xác thực lại trước khi duyệt')).toBeVisible();
+  41 |         await shot(page, '04-admin-quorum');
+  42 |     });
+  43 | });
+  44 | 
 ```

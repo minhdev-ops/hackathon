@@ -38,6 +38,11 @@ class LoginController extends Controller
 
         $user = $request->user();
 
+        // Chưa xác thực email → chỉ được tới trang xác nhận.
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         return redirect()->intended($user->isAdmin() ? '/admin/quorum' : '/');
     }
 

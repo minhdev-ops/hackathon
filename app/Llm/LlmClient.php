@@ -10,6 +10,7 @@ use App\Models\Playbook;
  * Implementations:
  *   - MockLlmClient (mặc định): suy ra từ playbook, không gọi mạng.
  *   - AnthropicLlmClient: gọi Anthropic khi LLM_DRIVER=anthropic.
+ *   - GeminiLlmClient: gọi Google Gemini khi LLM_DRIVER=gemini.
  */
 interface LlmClient
 {

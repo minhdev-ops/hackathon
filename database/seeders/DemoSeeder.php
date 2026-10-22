@@ -29,9 +29,9 @@ class DemoSeeder extends Seeder
     public function run(): void
     {
         $this->seedUsers();
-        $this->seedPlaybooks();
+        // Một nguồn dữ liệu playbook duy nhất (issue 05): PlaybookSeeder.
+        $this->call(PlaybookSeeder::class);
         $this->seedDocuments();
-        $this->seedAgent();
         $this->seedSampleTask();
     }
 
@@ -54,42 +54,6 @@ class DemoSeeder extends Seeder
             if ($user->role === 'owner' && blank($user->vault_kdf_salt)) {
                 $user->forceFill(['vault_kdf_salt' => self::DEMO_SALT_B64])->save();
             }
-        }
-    }
-
-    private function seedPlaybooks(): void
-    {
-        $playbooks = [
-            [
-                'slug' => 'rental',
-                'name' => 'Thuê nhà',
-                'description' => 'Hồ sơ thuê nhà',
-                'required_doc_types' => ['id_card', 'income_proof'],
-                'optional_doc_types' => ['rental_history', 'reference_letter'],
-                'forbidden_doc_types' => ['medical_summary', 'lab_result', 'insurance_card'],
-                'recipient_label' => 'Chủ nhà',
-                'default_ttl_minutes' => 60,
-                'max_ttl_minutes' => 1440,
-                'version' => 1,
-                'active' => true,
-            ],
-            [
-                'slug' => 'clinic',
-                'name' => 'Khám bệnh',
-                'description' => 'Hồ sơ khám bệnh',
-                'required_doc_types' => ['insurance_card', 'medical_summary'],
-                'optional_doc_types' => ['lab_result'],
-                'forbidden_doc_types' => ['income_proof', 'rental_history'],
-                'recipient_label' => 'Phòng khám',
-                'default_ttl_minutes' => 15,
-                'max_ttl_minutes' => 60,
-                'version' => 1,
-                'active' => true,
-            ],
-        ];
-
-        foreach ($playbooks as $data) {
-            Playbook::updateOrCreate(['slug' => $data['slug']], $data);
         }
     }
 
@@ -175,18 +139,6 @@ class DemoSeeder extends Seeder
             ."% TrustGate demo document\n"
             ."1 0 obj\n<< /Title ({$title}) /Subject ({$docType}) >>\nendobj\n"
             ."%%EOF\n";
-    }
-
-    private function seedAgent(): void
-    {
-        Agent::updateOrCreate(
-            ['client_id' => 'trustgate-agent'],
-            [
-                'name' => 'TrustGate Agent',
-                'allowed_playbooks' => ['rental', 'clinic'],
-                'status' => Agent::STATUS_ACTIVE,
-            ]
-        );
     }
 
     /**

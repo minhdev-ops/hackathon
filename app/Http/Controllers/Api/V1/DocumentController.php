@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDocumentRequest;
 use App\Http\Resources\DocumentResource;
 use App\Models\Document;
-use App\Models\User;
+use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -16,9 +16,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 /**
  * FR-VAULT-01..05: Két tài liệu — upload, danh sách, tải bản mã, xoá (soft delete).
  * Mã hoá đã diễn ra ở trình duyệt; server chỉ nhận và lưu bản mã.
+ * Meta audit không bao giờ chứa title/plaintext (NFR-SEC-01).
  */
 class DocumentController extends Controller
 {
+    public function __construct(private readonly AuditService $audit) {}
+
     /**
      * FR-VAULT-01: Owner tải lên tài liệu đã mã hoá.
      */
@@ -30,7 +33,7 @@ class DocumentController extends Controller
 
         $file = $request->file('file');
         $storedPath = $file->store(
-            'documents/' . $user->getKey(),
+            'documents/'.$user->getKey(),
             ['disk' => config('trustgate.grant_bundle_disk')]
         );
 
@@ -44,6 +47,19 @@ class DocumentController extends Controller
             'size_bytes' => $file->getSize(),
             'enc_mode' => $request->string('enc_mode'),
         ]);
+
+        $this->audit->record(
+            'document.uploaded',
+            AuditService::ACTOR_USER,
+            $user->getKey(),
+            'document',
+            $document->getKey(),
+            [
+                'doc_type' => $document->doc_type,
+                'size_bytes' => $document->size_bytes,
+                'enc_mode' => $document->enc_mode,
+            ],
+        );
 
         return response()->json(['data' => new DocumentResource($document)], 201);
     }
@@ -80,7 +96,19 @@ class DocumentController extends Controller
             ], 404);
         }
 
-        return Storage::disk($disk)->download($document->ciphertext_path, 'document.bin');
+        $this->audit->record(
+            'document.viewed',
+            AuditService::ACTOR_USER,
+            $request->user()?->getKey(),
+            'document',
+            $document->getKey(),
+            ['doc_type' => $document->doc_type],
+        );
+
+        return Storage::disk($disk)->download($document->ciphertext_path, 'document.bin', [
+            'Cache-Control' => 'no-store, max-age=0',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     /**
@@ -91,6 +119,15 @@ class DocumentController extends Controller
         Gate::authorize('delete', $document);
 
         $document->delete();
+
+        $this->audit->record(
+            'document.deleted',
+            AuditService::ACTOR_USER,
+            $request->user()?->getKey(),
+            'document',
+            $document->getKey(),
+            ['doc_type' => $document->doc_type],
+        );
 
         return response()->json([
             'data' => [

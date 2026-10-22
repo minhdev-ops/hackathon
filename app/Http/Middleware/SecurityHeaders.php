@@ -32,10 +32,13 @@ class SecurityHeaders
 
     private function contentSecurityPolicy(): string
     {
-        // Dev: Vite dev server tách origin (JS/HMR ở 5173).
+        // Dev: Vite dev server tách origin (JS/HMR). Đọc URL thực từ
+        // file `public/hot` để không cứng cổng 5173 — dev server có thể
+        // nhảy cổng (5174, 5175…) khi cổng cũ bị chiếm, và CSP cứng cổng
+        // sẽ chặn toàn bộ JS → React không hydrate → mọi nút bấm chết.
         $dev = '';
         if (config('app.env') !== 'production') {
-            $dev = ' http://localhost:5173 ws://localhost:5173 http://127.0.0.1:5173 ws://127.0.0.1:5173';
+            $dev = ' '.$this->viteDevOrigins();
         }
 
         return implode('; ', [
@@ -54,5 +57,23 @@ class SecurityHeaders
             "form-action 'self'",
             "frame-ancestors 'none'",
         ]);
+    }
+
+    /**
+     * Danh sách origin Vite dev (http + ws) cho CSP, đọc từ `public/hot`.
+     * Khi không có file (production build) hoặc đọc lỗi → fallback 5173.
+     */
+    private function viteDevOrigins(): string
+    {
+        $hot = base_path('public/hot');
+        $url = is_file($hot) ? trim((string) file_get_contents($hot)) : '';
+
+        if ($url === '' || ! preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#', $url)) {
+            $url = 'http://127.0.0.1:5173';
+        }
+
+        $ws = preg_replace('#^http#', 'ws', $url);
+
+        return $url.' '.$ws;
     }
 }

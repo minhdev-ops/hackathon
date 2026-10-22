@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from './AuthProvider';
+import { useAuth } from '../components/auth/AuthContext';
 
 /**
  * Guard theo vai trò cho React Router (issue 02).
@@ -10,7 +10,7 @@ import { useAuth } from './AuthProvider';
  *   guard này chỉ để UX không vấp 403 giữa chừng.
  */
 export default function ProtectedRoute({ children, roles }) {
-    const { user, loading } = useAuth();
+    const { me: user, loading } = useAuth();
     const location = useLocation();
 
     if (loading) {
@@ -19,6 +19,12 @@ export default function ProtectedRoute({ children, roles }) {
 
     if (!user) {
         return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    }
+
+    // Chưa xác thực email → chỉ được tới trang xác nhận (middleware server
+    // cũng chặn, nhưng guard này giữ UX mượt khi điều hướng client-side).
+    if (user.email_verified === false) {
+        return <Navigate to="/email/verify" replace />;
     }
 
     if (Array.isArray(roles) && roles.length > 0 && !roles.includes(user.role)) {

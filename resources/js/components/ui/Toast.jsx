@@ -36,9 +36,7 @@ export function ToastProvider({ children }) {
                         }`}
                     >
                         <div className="flex-1">
-                            {t.title && (
-                                <h4 className="text-sm font-semibold">{t.title}</h4>
-                            )}
+                            {t.title && <h4 className="text-sm font-semibold">{t.title}</h4>}
                             {t.description && <p className="text-xs text-muted mt-0.5">{t.description}</p>}
                         </div>
                         <button

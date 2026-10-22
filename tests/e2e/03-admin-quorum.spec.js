@@ -4,7 +4,7 @@ import { login, logout, shot } from './helpers.js';
 async function reauth(page) {
     await page.getByPlaceholder('Mật khẩu admin').fill('password');
     await page.getByRole('button', { name: 'Xác thực' }).click();
-    await expect(page.getByText('Đã xác thực lại')).toBeVisible();
+    await expect(page.getByText('Đã xác thực lại', { exact: true })).toBeVisible();
 }
 
 test.describe('Quorum quản trị', () => {
@@ -44,7 +44,7 @@ test.describe('Quorum quản trị', () => {
         await shot(page, '12-quorum-executed');
 
         await page.getByRole('button', { name: 'Thử đổi ngưỡng trực tiếp' }).click();
-        await expect(page.getByText(/409 QUORUM_REQUIRED/)).toBeVisible();
+        await expect(page.getByText(/409 QUORUM_REQUIRED/).first()).toBeVisible();
         await shot(page, '13-quorum-direct-blocked');
     });
 });

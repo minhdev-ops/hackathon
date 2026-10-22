@@ -1,16 +1,6 @@
-import { forwardRef, useCallback, useRef, useEffect } from 'react';
+import { forwardRef } from 'react';
 
 export const Skeleton = forwardRef(function Skeleton({ className = '', ...props }, ref) {
-    const pulseRef = useRef(null);
-
-    useEffect(() => {
-        if (ref && typeof ref === 'object' && 'current' in ref) {
-            // no-op, kept for forwardRef compatibility
-        }
-    }, []);
-
-    const pulse = useCallback(() => {}, []);
-
     return (
         <div
             ref={ref}

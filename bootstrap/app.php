@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ApiAuth;
 use App\Http\Middleware\EnsureDemoEnabled;
+use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\VerifyTideJwt;
@@ -28,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'apiauth' => ApiAuth::class,
             'auth.api' => ApiAuth::class,
             'demo.enabled' => EnsureDemoEnabled::class,
+            'email.verified' => EnsureEmailVerified::class,
             'role' => EnsureRole::class,
             'tide.auth' => VerifyTideJwt::class,
         ]);

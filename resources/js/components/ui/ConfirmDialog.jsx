@@ -25,10 +25,10 @@ export function ConfirmDialog({ isOpen, title, description, confirmLabel, cancel
         >
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
             <div
-                className="relative bg-surface rounded-xl border border-border p-6 max-w-md w-full shadow-lg"
+                className="relative bg-surface rounded-xl border border-border p-6 max-w-md w-full shadow-lg transition-all"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h3 id="confirm-dialog-title" className="text-base font-bold mb-1">
+                <h3 id="confirm-dialog-title" className="text-base font-bold mb-1 text-text">
                     {title}
                 </h3>
                 {description && (
@@ -38,7 +38,7 @@ export function ConfirmDialog({ isOpen, title, description, confirmLabel, cancel
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm font-medium text-text hover:bg-elevated transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text hover:bg-elevated transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                         {cancelLabel ?? 'Hủy'}
                     </button>
@@ -46,7 +46,7 @@ export function ConfirmDialog({ isOpen, title, description, confirmLabel, cancel
                         type="button"
                         onClick={handleConfirm}
                         disabled={confirming}
-                        className="flex-1 rounded-md bg-accent text-[#FDFDFC] px-3 py-2 text-sm font-medium hover:bg-accent-hover disabled:opacity-60 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        className="flex-1 rounded-lg bg-accent text-[#FDFDFC] px-3 py-2 text-sm font-medium shadow-sm hover:bg-accent-hover hover:shadow disabled:opacity-60 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     >
                         {confirming ? 'Đang xử lý…' : confirmLabel ?? 'Xác nhận'}
                     </button>

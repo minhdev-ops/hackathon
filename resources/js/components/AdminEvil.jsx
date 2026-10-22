@@ -80,9 +80,10 @@ export default function AdminEvil() {
         try {
             await api.post('/demo/evil/out-of-scope');
         } catch (err) {
-            const error = err.response?.data?.error || {};
+            // Giữ nguyên object lỗi để hiển thị mã OUT_OF_SCOPE (FR-DEMO-03).
+            const error = err.response?.data?.error || { message: err.message };
             setAgentResult(error);
-            setAgentError(error.message || err.message);
+            setAgentError(error);
         } finally {
             setLoadingState('agent', false);
         }
@@ -117,9 +118,15 @@ export default function AdminEvil() {
                 setSlowLog(res.data.data.log ?? []);
                 setSlowStatus(res.data.data.status);
                 if (res.data.data.status !== 'running' && res.data.data.status !== null) {
-                    setPollStop(true);
-                    setSlowRunning(false);
-                    if (pollRef.current) clearInterval(pollRef.current);
+                    // Job ghi dòng `run.stopped`/`slow_run.stopped` SAU khi đổi
+                    // trạng thái → poll thêm 2 lần nữa để không bỏ dòng cuối.
+                    clearInterval(pollRef.current);
+                    pollRef.current = setInterval(fetchLog, 1200);
+                    setTimeout(() => {
+                        clearInterval(pollRef.current);
+                        setPollStop(true);
+                        setSlowRunning(false);
+                    }, 3000);
                 }
             } catch (err) {
                 // ignore poll errors until task settles

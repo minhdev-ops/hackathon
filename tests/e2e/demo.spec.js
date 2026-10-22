@@ -60,10 +60,27 @@ test('owner duyệt grant bằng Vault key rồi thu hồi', async ({ page }) =>
 
     await expect(page).not.toHaveURL(/\/login/);
 
-    const tasksResponse = await page.request.get('/api/v1/tasks');
-    const tasks = (await tasksResponse.json()).data;
-    const grantId = tasks.find((task) => task.grant?.status === 'pending')?.grant?.id;
-    expect(grantId).toBeTruthy();
+    // Tạo task riêng (không dùng chung state giữa các spec) rồi chờ proposal.
+    const createResponse = await page.request.post('/api/v1/tasks', {
+        data: {
+            playbook_slug: 'rental',
+            instruction: 'E2E duyệt grant bằng Vault key',
+        },
+    });
+    expect(createResponse.status()).toBe(201);
+    const taskId = (await createResponse.json()).data.id;
+
+    let grantId = null;
+    await expect
+        .poll(
+            async () => {
+                const response = await page.request.get(`/api/v1/tasks/${taskId}`);
+                grantId = (await response.json()).data?.grant?.id ?? null;
+                return grantId;
+            },
+            { timeout: 30_000 },
+        )
+        .not.toBeNull();
 
     await page.goto(`/grants/${grantId}`);
 

@@ -33,6 +33,7 @@ class MeController extends Controller
                 'role' => $user->role,
                 'tide_sub' => $user->tide_sub,
                 'vault_kdf_salt' => $user->vault_kdf_salt,
+                'email_verified' => $user->hasVerifiedEmail(),
             ],
         ]);
     }

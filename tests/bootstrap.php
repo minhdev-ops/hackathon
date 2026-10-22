@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Env;
+
 /*
 |--------------------------------------------------------------------------
 | PHPUnit bootstrap — Issue 11 (hạ tầng test)
@@ -25,7 +27,7 @@ if (extension_loaded('pdo_sqlite') || ! extension_loaded('pdo_mysql')) {
 $base = dirname(__DIR__);
 
 if (is_file($base.'/.env')) {
-    Dotenv\Dotenv::create(Illuminate\Support\Env::getRepository(), $base)->safeLoad();
+    Dotenv\Dotenv::create(Env::getRepository(), $base)->safeLoad();
 }
 
 $host = getenv('DB_HOST') ?: '127.0.0.1';

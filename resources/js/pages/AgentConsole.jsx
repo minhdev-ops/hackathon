@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/layout/PageLayout';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { SkeletonLine } from '../components/ui/Skeleton';
 import { useToast } from '../components/ui/Toast';
+import { useAuth } from '../components/auth/AuthContext';
 import { api } from '../api/client';
 
 const POLL_INTERVAL = 3000;
 
 export default function AgentConsole() {
+    const navigate = useNavigate();
+    const { me: user } = useAuth();
     const { toast } = useToast();
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -219,12 +223,18 @@ export default function AgentConsole() {
                     <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
                         <h2 className="text-sm font-bold mb-3">Thao tác nhanh</h2>
                         <div className="space-y-2">
-                            <Button variant="secondary" size="sm" className="w-full text-left" onClick={() => navigate('/timeline')}>
+                            <Button variant="secondary" size="sm" className="w-full text-left" onClick={() => window.location.href = '/timeline'}>
                                 Xem nhật ký đầy đủ
                             </Button>
-                            <Button variant="secondary" size="sm" className="w-full text-left" disabled>
-                                Quản lý quorum
-                            </Button>
+                            {user?.role === 'admin' ? (
+                                <Button variant="secondary" size="sm" className="w-full text-left" onClick={() => navigate('/admin/quorum')}>
+                                    Quản lý quorum
+                                </Button>
+                            ) : (
+                                <p className="text-xs text-muted">
+                                    Quản lý quorum dành cho admin.
+                                </p>
+                            )}
                         </div>
                     </section>
                 </aside>

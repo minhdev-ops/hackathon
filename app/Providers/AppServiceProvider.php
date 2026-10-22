@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Llm\AnthropicLlmClient;
+use App\Llm\GeminiLlmClient;
 use App\Llm\LlmClient;
 use App\Llm\MockLlmClient;
 use App\Models\AgentTask;
@@ -20,10 +21,19 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(LlmClient::class, function () {
-            if (config('trustgate.llm_driver') === 'anthropic') {
+            $driver = config('trustgate.llm_driver');
+
+            if ($driver === 'anthropic') {
                 return new AnthropicLlmClient(
                     (string) config('services.anthropic.key', ''),
                     (string) config('services.anthropic.model', 'claude-3-5-sonnet-latest'),
+                );
+            }
+
+            if ($driver === 'gemini') {
+                return new GeminiLlmClient(
+                    (string) config('services.gemini.key', ''),
+                    (string) config('services.gemini.model', 'gemini-1.5-flash-latest'),
                 );
             }
 

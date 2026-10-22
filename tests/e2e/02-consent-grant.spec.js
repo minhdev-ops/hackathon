@@ -25,7 +25,7 @@ test.describe('Owner duyệt grant', () => {
         page.once('dialog', (dialog) => dialog.accept());
         await page.getByRole('button', { name: 'Thu hồi', exact: true }).click();
         await expect(page.getByText('Đã thu hồi grant và xoá khoá.')).toBeVisible();
-        await expect(page.getByText('Đã thu hồi')).toBeVisible();
+        await expect(page.getByText('Đã thu hồi', { exact: true })).toBeVisible();
         await shot(page, '08-grant-revoked');
     });
 });

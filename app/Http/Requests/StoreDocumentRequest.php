@@ -17,10 +17,22 @@ class StoreDocumentRequest extends FormRequest
     {
         return [
             'file' => ['required', 'file', 'max:10240'],
-            'iv' => ['required', 'string'],
-            'sha256' => ['required', 'string', 'size:64', 'regex:/^[0-9a-f]{64}$/'],
-            'doc_type' => ['required', 'string', 'in:' . implode(',', config('trustgate.doc_types'))],
-            'title_ct' => ['required', 'string'],
+            // IV phải là base64 của đúng 12 byte (AES-256-GCM).
+            'iv' => [
+                'required',
+                'string',
+                'max:32',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $decoded = is_string($value) ? base64_decode($value, true) : false;
+
+                    if ($decoded === false || strlen($decoded) !== 12) {
+                        $fail('IV phải là base64 của 12 byte ngẫu nhiên.');
+                    }
+                },
+            ],
+            'sha256' => ['required', 'string', 'regex:/^[0-9a-fA-F]{64}$/'],
+            'doc_type' => ['required', 'string', 'in:'.implode(',', config('trustgate.doc_types'))],
+            'title_ct' => ['required', 'string', 'max:4096'],
             'enc_mode' => ['required', 'string', 'in:tide,fallback'],
         ];
     }

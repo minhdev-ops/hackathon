@@ -119,6 +119,7 @@ return [
     |
     | "mock" (mặc định) suy ra đề xuất từ playbook và không gọi mạng.
     | "anthropic" dùng AnthropicLlmClient với ANTHROPIC_API_KEY.
+    | "gemini" dùng GeminiLlmClient với GEMINI_API_KEY.
     */
 
     'llm_driver' => env('LLM_DRIVER', 'mock'),

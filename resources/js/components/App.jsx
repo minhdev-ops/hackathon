@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './auth/AuthContext';
 import { ToastProvider } from './ui/Toast';
-import { AuthProvider } from '../auth/AuthProvider';
-import ProtectedRoute from '../auth/ProtectedRoute';
 import AppHeader from './layout/AppHeader';
 import AdminEvil from './AdminEvil';
 import Timeline from '../pages/Timeline';
@@ -22,34 +21,13 @@ export default function App() {
                     <main className="pt-0 lg:pt-0">
                         <Routes>
                             <Route path="/" element={<Home />} />
-                            <Route
-                                path="/vault"
-                                element={<ProtectedRoute roles={['owner']}><Vault /></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/playbooks"
-                                element={<ProtectedRoute roles={['owner', 'admin']}><Playbooks /></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/tasks/new"
-                                element={<ProtectedRoute roles={['owner']}><TaskCreate /></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/tasks/:id"
-                                element={<ProtectedRoute roles={['owner', 'admin']}><TaskDetail /></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/agent-console"
-                                element={<ProtectedRoute roles={['owner', 'admin']}><AgentConsole /></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/grants/:grantId"
-                                element={<ProtectedRoute roles={['owner']}><ConsentReview /></ProtectedRoute>}
-                            />
-                            <Route
-                                path="/admin/evil"
-                                element={<ProtectedRoute roles={['admin']}><AdminEvil /></ProtectedRoute>}
-                            />
+                            <Route path="/vault" element={<Vault />} />
+                            <Route path="/playbooks" element={<Playbooks />} />
+                            <Route path="/tasks/new" element={<TaskCreate />} />
+                            <Route path="/tasks/:id" element={<TaskDetail />} />
+                            <Route path="/agent-console" element={<AgentConsole />} />
+                            <Route path="/grants/:grantId" element={<ConsentReview />} />
+                            <Route path="/admin/evil" element={<AdminEvil />} />
                             <Route path="/timeline" element={<Timeline />} />
                         </Routes>
                     </main>

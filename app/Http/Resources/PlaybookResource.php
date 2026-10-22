@@ -24,7 +24,13 @@ class PlaybookResource extends JsonResource
             'recipient_label' => $this->recipient_label,
             'default_ttl_minutes' => $this->default_ttl_minutes,
             'max_ttl_minutes' => $this->max_ttl_minutes,
+            // FR-PB-02: các TTL offer cho Owner, đã lọc theo max của playbook.
+            'ttl_options' => array_values(array_filter(
+                (array) config('trustgate.grant_ttl_options', [5, 15, 60, 1440]),
+                fn (int $minutes) => $minutes <= (int) $this->max_ttl_minutes,
+            )),
             'version' => $this->version,
+            'active' => (bool) $this->active,
         ];
     }
 }

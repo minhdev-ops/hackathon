@@ -25,12 +25,29 @@ api.interceptors.request.use((config) => ({
  * cho phép khách xem nên không redirect.
  */
 let redirectingToLogin = false;
+let redirectingToVerify = false;
 
 api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response?.status;
+        const code = error.response?.data?.error?.code;
         const path = typeof window !== 'undefined' ? window.location.pathname : '/';
+
+        // Chưa xác thực email (403 EMAIL_NOT_VERIFIED) → về trang xác nhận
+        // một lần duy nhất, không loop.
+        if (
+            status === 403
+            && code === 'EMAIL_NOT_VERIFIED'
+            && !redirectingToVerify
+            && path !== '/email/verify'
+        ) {
+            redirectingToVerify = true;
+
+            if (typeof window !== 'undefined') {
+                window.location.assign('/email/verify');
+            }
+        }
 
         if (
             status === 401
